@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Attendance Analyzer</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: #f7f7f7;
+        color: #333;
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .left-panel,
+      .right-panel {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+      }
+
+      .left-panel {
+        background: #ffffff;
+        padding-right: 20px;
+        z-index: 1;
+        overflow: hidden;
+      }
+
+      .right-panel {
+        background: #f2f2f2;
+        align-items: center;
+        justify-content: center;
+      }
+
+      h1 {
+        font-size: 2.5em;
+        color: #c62828;
+        margin-bottom: 30px;
+        text-align: left;
+      }
+
+      .result-box {
+        background-color: #fff;
+        padding: 20px 25px;
+        border-left: 6px solid #c62828;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        font-size: 1.1em;
+        font-weight: bold;
+        margin-bottom: 30px;
+        animation: fadeIn 0.6s ease-in-out;
+        min-height: 60px;
+        z-index: 2;
+      }
+
+      .form-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        z-index: 2;
+      }
+
+      .form-group {
+        flex: 1 1 45%;
+      }
+
+      label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        color: #444;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1em;
+        background-color: #f9f9f9;
+      }
+
+      button {
+        margin-top: 25px;
+        width: 100%;
+        padding: 14px;
+        background-color: #c62828;
+        color: #fff;
+        border: none;
+        font-size: 1.1em;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        z-index: 2;
+        position: relative;
+      }
+
+      button:hover {
+        background-color: #a31616;
+      }
+
+      .guide-image {
+        width: 100%;
+        max-width: 90%;
+        aspect-ratio: 16/9;
+        border-radius: 12px;
+        object-fit: contain;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .semicircle {
+        position: absolute;
+        width: 300px;
+        height: 150px;
+        border-top-left-radius: 300px;
+        border-top-right-radius: 300px;
+        background-color: #ffebee;
+        bottom: -80px;
+        left: -100px;
+        z-index: 0;
+        animation: floatUp 3s ease-in-out infinite alternate;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0px);
+        }
+        100% {
+          transform: translateY(-20px);
+        }
+      }
+
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column;
+          height: auto;
+          overflow: auto;
+        }
+
+        .left-panel,
+        .right-panel {
+          width: 100%;
+          padding: 30px 20px;
+        }
+
+        .form-box {
+          flex-direction: column;
+        }
+
+        .form-group {
+          flex: 1 1 100%;
+        }
+
+        h1 {
+          text-align: center;
+        }
+
+        .result-box {
+          text-align: center;
+        }
+
+        .semicircle {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="left-panel">
+      <div class="semicircle"></div>
+      <h1>Attendance Analyzer</h1>
+
+      <div id="output" class="result-box">📊 Your result will appear here.</div>
+
+      <div class="form-box">
+        <div class="form-group">
+          <label for="present">Present Classes:</label>
+          <input type="number" id="present" value="37" />
+        </div>
+        <div class="form-group">
+          <label for="absent">Absent Classes:</label>
+          <input type="number" id="absent" value="10" />
+        </div>
+        <div class="form-group">
+          <label for="remaining">Classes Left:</label>
+          <input type="number" id="remaining" value="17" />
+        </div>
+        <div class="form-group">
+          <label for="target">Target %:</label>
+          <select id="target">
+            <option value="60">60%</option>
+            <option value="75">75%</option>
+            <option value="80">80%</option>
+            <option value="85" selected>85%</option>
+          </select>
+        </div>
+      </div>
+
+      <button onclick="calculate()">Calculate Attendance</button>
+    </div>
+
+    <div class="right-panel">
+      <img src="watt.jpg" alt="Guide Image" class="guide-image" />
+    </div>
+
+    <script>
+      function calculate() {
+        const present = parseInt(document.getElementById("present").value) || 0;
+        const absent = parseInt(document.getElementById("absent").value) || 0;
+        const remaining =
+          parseInt(document.getElementById("remaining").value) || 0;
+        const target = parseInt(document.getElementById("target").value);
+
+        const total = present + absent + remaining;
+        const required = Math.ceil((target / 100) * total);
+        const mustAttend = required - present;
+        const output = document.getElementById("output");
+
+        let result = "";
+
+        if (mustAttend <= 0) {
+          const canSkip = Math.max(
+            0,
+            remaining - (present + remaining - required)
+          );
+          result = `✅ You already meet <b>${target}%</b> attendance. You can skip <b>${canSkip}</b> more classes.`;
+        } else if (mustAttend > remaining) {
+          result = `❌ Even if you attend all <b>${remaining}</b> classes, it won't be enough to reach <b>${target}%</b>.`;
+        } else {
+          result = `📌 You need to attend at least <b>${mustAttend}</b> of the <b>${remaining}</b> remaining classes to reach <b>${target}%</b> attendance.`;
+        }
+
+        output.innerHTML = result;
+      }
+    </script>
+  </body>
+</html>
